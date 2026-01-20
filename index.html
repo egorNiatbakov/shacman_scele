@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Данные с весов</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚖️</text></svg>">
+    <style>
+        :root {
+            --primary: #1a237e;
+            --secondary: #0d47a1;
+            --success: #00c853;
+            --info: #2979ff;
+            --danger: #ff3d00;
+            --light: #f5f7fa;
+            --dark: #1a237e;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            min-height: 100vh;
+            padding: 15px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        .header .subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        
+        .ip-address {
+            background: rgba(255,255,255,0.15);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            margin-top: 10px;
+            display: inline-block;
+            word-break: break-all;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            padding: 20px;
+            background: var(--light);
+        }
+        
+        .btn {
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-get {
+            background: linear-gradient(135deg, var(--success) 0%, #00e676 100%);
+        }
+        
+        .btn-auto {
+            background: linear-gradient(135deg, var(--info) 0%, #00b0ff 100%);
+        }
+        
+        .btn-stop {
+            background: linear-gradient(135deg, var(--danger) 0%, #ff6b6b 100%);
+            display: none;
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        .status {
+            padding: 15px;
+            text-align: center;
+            font-weight: 500;
+            background: #e3f2fd;
+            color: var(--secondary);
+            border-bottom: 1px solid #bbdefb;
+            min-height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .status.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-color: #c8e6c9;
+        }
+        
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+            border-color: #ffcdd2;
+        }
+        
+        .status.loading {
+            background: #fff3e0;
+            color: #ef6c00;
+            border-color: #ffe0b2;
+        }
+        
+        .measurements {
+            padding: 20px;
+        }
+        
+        .measurement-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .measurement-row:last-child {
+            border-bottom: none;
+        }
+        
+        .measurement-label {
+            color: #546e7a;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        .measurement-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--dark);
+        }
+        
+        .measurement-unit {
+            color: #78909c;
+            font-size: 14px;
+            margin-left: 3px;
+            font-weight: 500;
+        }
+        
+        .highlight-box {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 2px solid #81c784;
+            text-align: center;
+        }
+        
+        .highlight-title {
+            color: #2e7d32;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .highlight-value {
+            font-size: 42px;
+            font-weight: 800;
+            color: #1b5e20;
+            line-height: 1;
+        }
+        
+        .highlight-unit {
+            font-size: 20px;
+            color: #388e3c;
+            margin-left: 5px;
+        }
+        
+        .highlight-details {
+            font-size: 13px;
+            color: #00c853;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+        
+        .info-box {
+            background: var(--light);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            font-size: 14px;
+        }
+        
+        .info-label {
+            color: #546e7a;
+        }
+        
+        .info-value {
+            color: var(--dark);
+            font-weight: 600;
+        }
+        
+        .json-box {
+            background: #1e1e1e;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'Cascadia Code', 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            color: #d4d4d4;
+            overflow-x: auto;
+        }
+        
+        .json-title {
+            color: #569cd6;
+            font-size: 14px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .footer {
+            text-align: center;
+            color: #78909c;
+            font-size: 12px;
+            padding: 15px;
+            border-top: 1px solid #e0e0e0;
+            background: var(--light);
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                border-radius: 15px;
+            }
+            
+            .header {
+                padding: 20px 15px;
+            }
+            
+            .controls {
+                padding: 15px;
+            }
+            
+            .measurements {
+                padding: 15px;
+            }
+            
+            .highlight-value {
+                font-size: 36px;
+            }
+            
+            .measurement-value {
+                font-size: 22px;
+            }
+            
+            .btn {
+                padding: 14px;
+                font-size: 14px;
+            }
+        }
+        
+        /* Для улучшения читаемости на мобильных */
+        @media (max-width: 360px) {
+            .controls {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Анимация появления данных */
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .data-loaded {
+            animation: slideUp 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚖️ Данные с весов</h1>
+            <div class="subtitle">Мониторинг в реальном времени</div>
+            <div class="ip-address" id="api-url">charkova1.keenetic.pro:333/api/data</div>
+        </div>
+        
+        <div class="controls">
+            <button id="get-btn" class="btn btn-get">
+                <span>Получить данные</span>
+            </button>
+            <button id="auto-btn" class="btn btn-auto">
+                <span>Автообновление</span>
+            </button>
+            <button id="stop-btn" class="btn btn-stop">
+                <span>Остановить</span>
+            </button>
+        </div>
+        
+        <div id="status" class="status">
+            Готов к работе. Нажмите "Получить данные"
+        </div>
+        
+        <div class="measurements">
+            <div class="measurement-row">
+                <div class="measurement-label">Ширина</div>
+                <div class="measurement-value">
+                    <span id="width">--</span><span class="measurement-unit">см</span>
+                </div>
+            </div>
+            
+            <div class="measurement-row">
+                <div class="measurement-label">Высота</div>
+                <div class="measurement-value">
+                    <span id="height">--</span><span class="measurement-unit">см</span>
+                </div>
+            </div>
+            
+            <div class="measurement-row">
+                <div class="measurement-label">Глубина</div>
+                <div class="measurement-value">
+                    <span id="depth">--</span><span class="measurement-unit">см</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="highlight-box">
+            <div class="highlight-title">Объём</div>
+            <div class="highlight-value">
+                <span id="volume">--</span><span class="highlight-unit">м³</span>
+            </div>
+            <div id="volume-details" class="highlight-details"></div>
+        </div>
+        
+        <div class="highlight-box" style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-color: #64b5f6;">
+            <div class="highlight-title">Масса</div>
+            <div class="highlight-value">
+                <span id="weight">--</span><span class="highlight-unit">кг</span>
+            </div>
+        </div>
+        
+        <div class="info-box">
+            <div class="info-row">
+                <div class="info-label">Штрих-код</div>
+                <div id="barcode" class="info-value">Нет</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Код устройства</div>
+                <div id="devcode" class="info-value">--</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Последнее обновление</div>
+                <div id="time" class="info-value">--:--:--</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Статус подключения</div>
+                <div id="connection-status" class="info-value" style="color: #f44336;">Оффлайн</div>
+            </div>
+        </div>
+        
+        <div class="json-box">
+            <div class="json-title">📋 JSON данные</div>
+            <pre id="json">{
+  "status": "ready",
+  "message": "Нажмите 'Получить данные' для загрузки"
+}</pre>
+        </div>
+        
+        <div class="footer">
+            Весовой терминал • Данные обновляются в реальном времени
+        </div>
+    </div>
+
+    <script>
+        // Элементы DOM
+        const getBtn = document.getElementById('get-btn');
+        const autoBtn = document.getElementById('auto-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const status = document.getElementById('status');
+        const apiUrlElement = document.getElementById('api-url');
+        
+        // Элементы данных
+        const width = document.getElementById('width');
+        const height = document.getElementById('height');
+        const depth = document.getElementById('depth');
+        const weight = document.getElementById('weight');
+        const volume = document.getElementById('volume');
+        const volumeDetails = document.getElementById('volume-details');
+        const barcode = document.getElementById('barcode');
+        const devcode = document.getElementById('devcode');
+        const time = document.getElementById('time');
+        const json = document.getElementById('json');
+        const connectionStatus = document.getElementById('connection-status');
+        
+        // Переменные состояния
+        let autoInterval = null;
+        let isAuto = false;
+        let lastData = null;
+        let requestCount = 0;
+        
+        // URL API - можно изменить если нужно
+        const API_URL = 'http://charkova1.keenetic.pro:333/api/data';
+        
+        // Функция обновления времени
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('ru-RU', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            const dateStr = now.toLocaleDateString('ru-RU');
+            time.textContent = `${dateStr} ${timeStr}`;
+            return timeStr;
+        }
+        
+        // Функция расчета объема в м³
+        function calculateVolumeM3(w, h, d) {
+            if (!w || w === 'null' || !h || h === 'null' || !d || d === 'null') {
+                return null;
+            }
+            
+            const widthNum = parseFloat(w);
+            const heightNum = parseFloat(h);
+            const depthNum = parseFloat(d);
+            
+            if (isNaN(widthNum) || isNaN(heightNum) || isNaN(depthNum)) {
+                return null;
+            }
+            
+            // Переводим из см в метры
+            const widthM = widthNum / 100;
+            const heightM = heightNum / 100;
+            const depthM = depthNum / 100;
+            
+            // Объем в м³
+            const volumeM3 = widthM * heightM * depthM;
+            
+            // Также считаем в литрах для информации
+            const volumeLiters = volumeM3 * 1000;
+            
+            return {
+                m3: volumeM3.toFixed(6),
+                liters: volumeLiters.toFixed(2),
+                calculation: `${widthM.toFixed(3)} × ${heightM.toFixed(3)} × ${depthM.toFixed(3)} м`,
+                dimensions: `${widthNum} × ${heightNum} × ${depthNum} см`
+            };
+        }
+        
+        // Функция обновления интерфейса
+        function updateDisplay(data) {
+            lastData = data;
+            
+            // Обновляем основные измерения
+            width.textContent = data.width || '--';
+            height.textContent = data.height || '--';
+            depth.textContent = data.depth || '--';
+            weight.textContent = data.weight || '--';
+            
+            // Штрих-код и код устройства
+            barcode.textContent = data.barcode || 'Нет';
+            devcode.textContent = data.devCode || '--';
+            
+            // Расчет объема
+            const volumeData = calculateVolumeM3(data.width, data.height, data.depth);
+            
+            if (volumeData) {
+                volume.textContent = volumeData.m3;
+                volumeDetails.textContent = `${volumeData.dimensions} = ${volumeData.liters} л`;
+            } else {
+                volume.textContent = '--';
+                volumeDetails.textContent = '';
+            }
+            
+            // Обновляем JSON
+            const jsonData = {
+                rawData: data,
+                calculated: {
+                    volumeM3: volumeData ? volumeData.m3 : null,
+                    volumeLiters: volumeData ? volumeData.liters : null
+                },
+                timestamp: new Date().toISOString(),
+                requestCount: requestCount
+            };
+            
+            json.textContent = JSON.stringify(jsonData, null, 2);
+            
+            // Обновляем время и статус
+            updateTime();
+            connectionStatus.textContent = 'Онлайн';
+            connectionStatus.style.color = '#4caf50';
+            
+            // Анимация появления данных
+            document.querySelectorAll('.measurement-value, .highlight-value').forEach(el => {
+                el.classList.add('data-loaded');
+                setTimeout(() => el.classList.remove('data-loaded'), 300);
+            });
+        }
+        
+        // Основная функция получения данных
+        async function getData() {
+            // Показываем статус загрузки
+            status.textContent = '⌛ Получаем данные...';
+            status.className = 'status loading';
+            
+            const originalText = getBtn.innerHTML;
+            getBtn.innerHTML = '<span class="spinner"></span> Загрузка...';
+            getBtn.disabled = true;
+            
+            requestCount++;
+            
+            try {
+                // Пробуем несколько методов для обхода CORS на GitHub Pages
+                let data = null;
+                let error = null;
+                
+                // Метод 1: Прямой запрос через прокси CORS
+                try {
+                    // Используем публичный CORS прокси
+                    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(API_URL)}`;
+                    console.log('Пробуем получить данные через прокси:', proxyUrl);
+                    
+                    const response = await fetch(proxyUrl, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    
+                    data = await response.json();
+                    console.log('Данные получены через прокси:', data);
+                    
+                } catch (proxyError) {
+                    console.log('Прокси не сработал:', proxyError);
+                    error = proxyError;
+                    
+                    // Метод 2: Пробуем другой прокси
+                    try {
+                        const altProxyUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(API_URL)}`;
+                        const response = await fetch(altProxyUrl);
+                        
+                        if (response.ok) {
+                            data = await response.json();
+                            console.log('Данные получены через альтернативный прокси');
+                        } else {
+                            throw new Error('Альтернативный прокси не сработал');
+                        }
+                    } catch (altError) {
+                        console.log('Все прокси не сработали');
+                        
+                        // Метод 3: Демо-данные
+                        data = {
+                            "barcode": null,
+                            "depth": "15.6",
+                            "devCode": "488",
+                            "height": "10.1",
+                            "weight": "2.130",
+                            "width": "8.7",
+                            "timestamp": new Date().toISOString(),
+                            "source": "demo"
+                        };
+                    }
+                }
+                
+                // Обновляем интерфейс
+                updateDisplay(data);
+                
+                // Обновляем статус
+                if (data.source === 'demo') {
+                    status.textContent = `⚠️ Демо-данные (${updateTime()})`;
+                    status.className = 'status error';
+                    connectionStatus.textContent = 'Демо-режим';
+                    connectionStatus.style.color = '#ff9800';
+                } else {
+                    status.textContent = `✅ Данные получены (${updateTime()})`;
+                    status.className = 'status success';
+                }
+                
+                return data;
+                
+            } catch (error) {
+                console.error('Критическая ошибка:', error);
+                
+                // Используем демо-данные при ошибке
+                const demoData = {
+                    "barcode": null,
+                    "depth": "15.6",
+                    "devCode": "488",
+                    "height": "10.1",
+                    "weight": "2.130",
+                    "width": "8.7",
+                    "timestamp": new Date().toISOString(),
+                    "source": "demo-error"
+                };
+                
+                updateDisplay(demoData);
+                
+                status.textContent = `⚠️ Ошибка: ${error.message}. Демо-данные`;
+                status.className = 'status error';
+                connectionStatus.textContent = 'Ошибка подключения';
+                connectionStatus.style.color = '#f44336';
+                
+                return demoData;
+                
+            } finally {
+                // Восстанавливаем кнопку
+                getBtn.innerHTML = originalText;
+                getBtn.disabled = false;
+            }
+        }
+        
+        // Функция управления автообновлением
+        function toggleAutoUpdate() {
+            if (isAuto) {
+                // Останавливаем автообновление
+                clearInterval(autoInterval);
+                isAuto = false;
+                autoBtn.style.display = 'flex';
+                stopBtn.style.display = 'none';
+                status.textContent = '⏹️ Автообновление остановлено';
+                status.className = 'status';
+            } else {
+                // Запускаем автообновление
+                autoInterval = setInterval(getData, 5000);
+                isAuto = true;
+                autoBtn.style.display = 'none';
+                stopBtn.style.display = 'flex';
+                status.textContent = '🔄 Автообновление запущено (5 сек)';
+                status.className = 'status success';
+                
+                // Сразу получаем данные
+                getData();
+            }
+        }
+        
+        // Обработчики событий
+        getBtn.addEventListener('click', getData);
+        autoBtn.addEventListener('click', toggleAutoUpdate);
+        stopBtn.addEventListener('click', toggleAutoUpdate);
+        
+        // При загрузке страницы
+        window.addEventListener('load', () => {
+            console.log('Страница загружена');
+            updateTime();
+            
+            // Показываем информацию об API
+            apiUrlElement.textContent = API_URL;
+            
+            // Пробуем получить данные через 1 секунду
+            setTimeout(() => {
+                getData();
+            }, 1000);
+        });
+        
+        // Обновляем при возвращении на вкладку
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden && isAuto) {
+                console.log('Вкладка активна, обновляем данные');
+                getData();
+            }
+        });
+        
+        // Клавиатурные сокращения
+        document.addEventListener('keydown', function(e) {
+            // F5 для обновления данных
+            if (e.key === 'F5') {
+                e.preventDefault();
+                getData();
+            }
+            // Ctrl+R для автообновления
+            if (e.ctrlKey && e.key === 'r') {
+                e.preventDefault();
+                toggleAutoUpdate();
+            }
+        });
+    </script>
+</body>
+</html>
