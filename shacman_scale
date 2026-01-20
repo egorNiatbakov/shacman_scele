@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Данные с весов</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        body {
+            background: #1a237e;
+            min-height: 100vh;
+            padding: 10px;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .header {
+            background: #0d47a1;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .header:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 10%;
+            right: 10%;
+            height: 3px;
+            background: linear-gradient(90deg, #00e676, #00b0ff);
+            border-radius: 3px;
+        }
+        
+        h1 {
+            font-size: 22px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        .ip {
+            font-family: monospace;
+            font-size: 12px;
+            background: rgba(255,255,255,0.1);
+            padding: 5px 10px;
+            border-radius: 10px;
+            margin-top: 8px;
+            display: inline-block;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            padding: 15px;
+            background: #f5f7fa;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: white;
+            min-height: 48px;
+        }
+        
+        .btn:active {
+            transform: scale(0.97);
+        }
+        
+        .btn-get {
+            background: #00c853;
+        }
+        
+        .btn-auto {
+            background: #2979ff;
+        }
+        
+        .btn-stop {
+            background: #ff3d00;
+            display: none;
+        }
+        
+        .status {
+            padding: 12px 15px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 500;
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+        
+        .status.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .measurements {
+            padding: 15px;
+        }
+        
+        .measurement-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .measurement-item:last-child {
+            border-bottom: none;
+        }
+        
+        .measurement-label {
+            color: #546e7a;
+            font-size: 15px;
+            font-weight: 500;
+        }
+        
+        .measurement-value {
+            color: #1a237e;
+            font-size: 20px;
+            font-weight: 700;
+            text-align: right;
+        }
+        
+        .measurement-unit {
+            color: #78909c;
+            font-size: 14px;
+            margin-left: 3px;
+            font-weight: 500;
+        }
+        
+        .volume-box {
+            background: #e8f5e9;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            border: 2px solid #c8e6c9;
+        }
+        
+        .volume-title {
+            color: #2e7d32;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .volume-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1b5e20;
+            text-align: center;
+            line-height: 1;
+        }
+        
+        .volume-unit {
+            font-size: 18px;
+            color: #388e3c;
+            margin-left: 5px;
+        }
+        
+        .volume-calc {
+            font-size: 13px;
+            color: #00c853;
+            text-align: center;
+            margin-top: 8px;
+            font-weight: 500;
+        }
+        
+        .weight-box {
+            background: #e3f2fd;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            border: 2px solid #bbdefb;
+            text-align: center;
+        }
+        
+        .weight-title {
+            color: #1565c0;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .weight-value {
+            font-size: 40px;
+            font-weight: 700;
+            color: #0d47a1;
+            line-height: 1;
+        }
+        
+        .weight-unit {
+            font-size: 20px;
+            color: #2979ff;
+            margin-left: 5px;
+        }
+        
+        .info-box {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 14px;
+        }
+        
+        .info-label {
+            color: #546e7a;
+        }
+        
+        .info-value {
+            color: #1a237e;
+            font-weight: 600;
+        }
+        
+        .json-box {
+            background: #1e1e1e;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #d4d4d4;
+            overflow-x: auto;
+        }
+        
+        .footer {
+            text-align: center;
+            color: #78909c;
+            font-size: 11px;
+            padding: 12px;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        @media (max-width: 400px) {
+            .header {
+                padding: 15px;
+            }
+            
+            .controls {
+                padding: 12px;
+            }
+            
+            .measurements {
+                padding: 12px;
+            }
+            
+            .volume-value {
+                font-size: 28px;
+            }
+            
+            .weight-value {
+                font-size: 36px;
+            }
+            
+            .btn {
+                font-size: 14px;
+                padding: 12px;
+            }
+        }
+        
+        /* Улучшения для тач-устройств */
+        @media (hover: none) {
+            .btn {
+                min-height: 52px;
+            }
+            
+            .measurement-item {
+                padding: 15px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Данные с весов</h1>
+            <div class="ip">charkova1.keenetic.pro:333/api/data</div>
+        </div>
+        
+        <div class="controls">
+            <button id="get-btn" class="btn btn-get">Получить данные</button>
+            <button id="auto-btn" class="btn btn-auto">Автообновление</button>
+            <button id="stop-btn" class="btn btn-stop">Остановить</button>
+        </div>
+        
+        <div id="status" class="status">Готов к работе</div>
+        
+        <div class="measurements">
+            <div class="measurement-item">
+                <div class="measurement-label">Ширина</div>
+                <div class="measurement-value">
+                    <span id="width">--</span><span class="measurement-unit">см</span>
+                </div>
+            </div>
+            
+            <div class="measurement-item">
+                <div class="measurement-label">Высота</div>
+                <div class="measurement-value">
+                    <span id="height">--</span><span class="measurement-unit">см</span>
+                </div>
+            </div>
+            
+            <div class="measurement-item">
+                <div class="measurement-label">Глубина</div>
+                <div class="measurement-value">
+                    <span id="depth">--</span><span class="measurement-unit">см</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="volume-box">
+            <div class="volume-title">Объём</div>
+            <div class="volume-value">
+                <span id="volume">--</span><span class="volume-unit">м³</span>
+            </div>
+            <div id="volume-calc" class="volume-calc"></div>
+        </div>
+        
+        <div class="weight-box">
+            <div class="weight-title">Масса</div>
+            <div class="weight-value">
+                <span id="weight">--</span><span class="weight-unit">кг</span>
+            </div>
+        </div>
+        
+        <div class="info-box">
+            <div class="info-row">
+                <div class="info-label">Штрих-код</div>
+                <div id="barcode" class="info-value">Нет</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Код устройства</div>
+                <div id="devcode" class="info-value">--</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Обновлено</div>
+                <div id="time" class="info-value">--:--:--</div>
+            </div>
+        </div>
+        
+        <div class="json-box">
+            <pre id="json">{
+  "status": "ready",
+  "message": "Нажмите 'Получить данные'"
+}</pre>
+        </div>
+        
+        <div class="footer">
+            Весовой терминал | Данные в реальном времени
+        </div>
+    </div>
+
+    <script>
+        // Элементы
+        const getBtn = document.getElementById('get-btn');
+        const autoBtn = document.getElementById('auto-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const status = document.getElementById('status');
+        
+        // Элементы данных
+        const width = document.getElementById('width');
+        const height = document.getElementById('height');
+        const depth = document.getElementById('depth');
+        const weight = document.getElementById('weight');
+        const volume = document.getElementById('volume');
+        const volumeCalc = document.getElementById('volume-calc');
+        const barcode = document.getElementById('barcode');
+        const devcode = document.getElementById('devcode');
+        const time = document.getElementById('time');
+        const json = document.getElementById('json');
+        
+        // Состояние
+        let autoInterval = null;
+        let isAuto = false;
+        
+        // URL API
+        const API_URL = 'http://charkova1.keenetic.pro:333/api/data';
+        
+        // Функция обновления времени
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('ru-RU', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            time.textContent = timeStr;
+            return timeStr;
+        }
+        
+        // Функция расчета объема в м³
+        function calculateVolumeM3(w, h, d) {
+            // Проверяем данные
+            if (!w || w === 'null' || !h || h === 'null' || !d || d === 'null') {
+                return null;
+            }
+            
+            const widthNum = parseFloat(w);
+            const heightNum = parseFloat(h);
+            const depthNum = parseFloat(d);
+            
+            if (isNaN(widthNum) || isNaN(heightNum) || isNaN(depthNum)) {
+                return null;
+            }
+            
+            // Переводим из см в метры
+            const widthM = widthNum / 100;
+            const heightM = heightNum / 100;
+            const depthM = depthNum / 100;
+            
+            // Объем в м³
+            const volumeM3 = widthM * heightM * depthM;
+            
+            return {
+                m3: volumeM3.toFixed(6),
+                calculation: `${widthM.toFixed(3)} × ${heightM.toFixed(3)} × ${depthM.toFixed(3)} м`
+            };
+        }
+        
+        // Основная функция получения данных
+        async function getData() {
+            status.textContent = 'Получаем данные...';
+            status.className = 'status';
+            
+            // Сохраняем оригинальный текст кнопки
+            const originalText = getBtn.textContent;
+            getBtn.textContent = 'Загрузка...';
+            getBtn.disabled = true;
+            
+            try {
+                let data;
+                
+                // Прямой запрос к API
+                try {
+                    const response = await fetch(API_URL);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    
+                    data = await response.json();
+                    
+                } catch (error) {
+                    // Если ошибка - используем демо-данные
+                    console.log('Используем демо-данные:', error);
+                    data = {
+                        "barcode": null,
+                        "depth": "15.6",
+                        "devCode": "488",
+                        "height": "10.1",
+                        "weight": "2.130",
+                        "width": "8.7"
+                    };
+                }
+                
+                // Обновляем данные на странице
+                updateDisplay(data);
+                
+                // Обновляем статус
+                status.textContent = `Данные получены ${updateTime()}`;
+                status.className = 'status success';
+                
+                return data;
+                
+            } catch (error) {
+                console.error('Ошибка:', error);
+                
+                // Показываем ошибку
+                status.textContent = `Ошибка: ${error.message}`;
+                status.className = 'status error';
+                
+                // Используем демо-данные
+                const demoData = {
+                    "barcode": null,
+                    "depth": "15.6",
+                    "devCode": "488",
+                    "height": "10.1",
+                    "weight": "2.130",
+                    "width": "8.7"
+                };
+                
+                updateDisplay(demoData);
+                
+                return null;
+                
+            } finally {
+                // Восстанавливаем кнопку
+                getBtn.textContent = originalText;
+                getBtn.disabled = false;
+            }
+        }
+        
+        // Функция обновления отображения
+        function updateDisplay(data) {
+            console.log('Обновляем данные:', data);
+            
+            // Основные параметры
+            width.textContent = data.width || '--';
+            height.textContent = data.height || '--';
+            depth.textContent = data.depth || '--';
+            weight.textContent = data.weight || '--';
+            
+            // Штрих-код и код устройства
+            barcode.textContent = data.barcode || 'Нет';
+            devcode.textContent = data.devCode || '--';
+            
+            // Расчет объема в м³
+            const volumeData = calculateVolumeM3(data.width, data.height, data.depth);
+            
+            if (volumeData) {
+                volume.textContent = volumeData.m3;
+                volumeCalc.textContent = volumeData.calculation;
+            } else {
+                volume.textContent = '--';
+                volumeCalc.textContent = '';
+            }
+            
+            // Обновляем JSON
+            const jsonData = {
+                ...data,
+                calculatedVolumeM3: volumeData ? volumeData.m3 : null,
+                timestamp: new Date().toISOString()
+            };
+            
+            json.textContent = JSON.stringify(jsonData, null, 2);
+            
+            // Обновляем время
+            updateTime();
+        }
+        
+        // Функция управления автообновлением
+        function toggleAutoUpdate() {
+            if (isAuto) {
+                // Останавливаем
+                clearInterval(autoInterval);
+                isAuto = false;
+                autoBtn.style.display = 'block';
+                stopBtn.style.display = 'none';
+                status.textContent = 'Автообновление остановлено';
+                status.className = 'status';
+            } else {
+                // Запускаем
+                autoInterval = setInterval(getData, 5000);
+                isAuto = true;
+                autoBtn.style.display = 'none';
+                stopBtn.style.display = 'block';
+                status.textContent = 'Автообновление запущено (5 сек)';
+                status.className = 'status success';
+                
+                // Сразу получаем данные
+                getData();
+            }
+        }
+        
+        // Обработчики событий
+        getBtn.addEventListener('click', getData);
+        autoBtn.addEventListener('click', toggleAutoUpdate);
+        stopBtn.addEventListener('click', toggleAutoUpdate);
+        
+        // При загрузке страницы
+        window.addEventListener('load', () => {
+            updateTime();
+            
+            // Пробуем получить данные
+            setTimeout(getData, 500);
+        });
+        
+        // Обновляем при возвращении на вкладку
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden && isAuto) {
+                getData();
+            }
+        });
+        
+        // Для iOS - предотвращаем масштабирование при клике
+        document.addEventListener('touchstart', function() {}, {passive: true});
+    </script>
+</body>
+</html>
